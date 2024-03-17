@@ -389,7 +389,7 @@ _parse_json_value (char** json_str, json_parse_ctx_t* ctx)
 		                   ? JSON_VAL_NULL
 		                   : JSON_VAL_INVALID;
 	default:
-		if (isnumber ((*json_str)[0]) || (*json_str)[0] == '-'
+		if (isdigit ((*json_str)[0]) || (*json_str)[0] == '-'
 		    || (*json_str)[0] == '+')
 		{
 			char* num_end = NULL;
