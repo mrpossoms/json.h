@@ -42,11 +42,11 @@ Or if you would rather allocate exactly the number of bytes needed (this walks t
 
 ```C
 // count the number of bytes the string needs
-size_t json_str_len = json_serialize (&root, NULL, 0, &print_desc);
+size_t json_str_len = json_serialize (&root, NULL, 0, NULL);
 
 // allocate and serialize
 char* json_str = (char*)alloca (json_str_len); // use allocation method of choice
-json_serialize (&root, json_str, json_str_len, &print_desc);
+json_serialize (&root, json_str, json_str_len, NULL);
 ```
 
 A serialized json string can then be parsed back into a `json_t` structure like so:
