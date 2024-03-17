@@ -22,7 +22,8 @@
 struct json_node;
 
 enum json_value_type {
-	JSON_VAL_NULL = 0,
+	JSON_VAL_INVALID = 0,
+	JSON_VAL_NULL,
 	JSON_VAL_OBJ,
 	JSON_VAL_STR,
 	JSON_VAL_FLT,
@@ -36,7 +37,7 @@ struct json_value {
 		struct json_node* obj;
 		const char* str;
 		double num;
-		int boolean;
+		bool boolean;
 	};
 };
 
@@ -221,9 +222,13 @@ static char* _eat_whitespace(char* haystack)
 	return haystack;
 }
 
+// TODO: this function is somewhat problematic since it doesn't currently
+// support a way to indicate an invalid value
 struct json_value _parse_json_value(char** json_str, json_parse_ctx_t* ctx)
 {
 	*json_str = _eat_whitespace(*json_str);
+
+	struct json_value out = {};
 
 	switch((*json_str)[0])
 	{
@@ -237,22 +242,40 @@ struct json_value _parse_json_value(char** json_str, json_parse_ctx_t* ctx)
 			while(str_end[-1] == '\\' || str_end[0] != '"')
 			{
 				str_end = _seek_token("\"", *json_str, false);
+
+				if (!str_end)
+				{ // We ran into a null terminator, not the closing quote
+				  // return invalid
+					return out;
+				}
 			}
 
 			*json_str = str_end + 1;
 
-			return (struct json_value){
-				.type = JSON_VAL_STR,
-				.str = str_begin,
-			};
+			// TODO: either modify in place to null terminate, or change the str
+			// type to include an end or len 
+			out.type = JSON_VAL_STR;
+			out.str = str_begin;
 		}
 		break;
 	case '{': // object
-		return (struct json_value){
-			.type = JSON_VAL_OBJ,
-			.obj = _json_parse_node(json_str, ctx),
-		};
+		out.type = JSON_VAL_OBJ,
+		out.obj = _json_parse_node(json_str, ctx);
 		break;
+	case 't': // boolean
+	case 'f':
+		out.boolean = strncmp(*json_str, "true", 4) == 0;
+		
+		if (out.boolean == false && strncmp(*json_str, "false", 5) != 0)
+		{ // Wasn't false. Return invalid
+			return out;
+		}
+		
+		out.type = JSON_VAL_BOOL;
+		*json_str += out.boolean ? 4 : 5;
+		break;
+	case 'n': // null
+		out.type = strncmp(*json_str, "null", 4) == 0 ? JSON_VAL_NULL : JSON_VAL_INVALID;
 	default:
 		if (isnumber((*json_str)[0]) || (*json_str)[0] == '-' || (*json_str)[0] == '+')
 		{
@@ -261,19 +284,17 @@ struct json_value _parse_json_value(char** json_str, json_parse_ctx_t* ctx)
 			// TODO: handle errors when parsing number
 			double d = strtod(*json_str, &num_end);
 
+			*json_str = num_end;
+
 			return (struct json_value) {
 				.type = JSON_VAL_FLT,
 				.num = d,
 			};
-
-			*json_str = num_end + 1;
 		}
 		break;
 	}
 
-	return (struct json_value){
-
-	};
+	return out;
 }
 
 static struct json_pair* _parse_json_pair(char** json_str, json_parse_ctx_t* ctx)

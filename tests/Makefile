@@ -6,7 +6,7 @@ TESTS=$(patsubst %.c,bin/%,$(wildcard *.c))
 bin: 
 	mkdir -p $@
 
-bin/%: %.c bin
+bin/%: %.c ../inc/json.h bin
 	$(CC) $(CFLAGS) $(LIB) $(INC) $(LIBS) $< -o $@ $(LINK)
 
 .PHONY: test clean 
