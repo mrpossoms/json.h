@@ -43,6 +43,7 @@ struct json_value
 		bool boolean;
 	};
 };
+typedef struct json_value json_value_t;
 
 #define JSON_FLT(x) ((struct json_value){ .type = JSON_VAL_FLT, .num = (x) })
 #define JSON_INT(x) ((struct json_value){ .type = JSON_VAL_INT, .num = (x) })
@@ -227,7 +228,7 @@ _json_print (struct json_node* node,
 	return size;
 }
 
-static size_t
+static inline size_t
 json_serialize (struct json_node* node,
                 char* buf,
                 int buffer_size,
@@ -504,7 +505,7 @@ _parse_json_node (char** json_str, json_parse_ctx_t* ctx)
 	return out;
 }
 
-static json_t*
+static inline json_t*
 json_deserialize_alloc (char* json_str, json_allocator_t alloc_desc)
 {
 	if (!alloc_desc.alloc)
@@ -520,7 +521,7 @@ json_deserialize_alloc (char* json_str, json_allocator_t alloc_desc)
 	return _parse_json_node (&json_str, &ctx);
 }
 
-static json_t*
+static inline json_t*
 json_deserialize (char* json_str)
 {
 	json_parse_ctx_t ctx = { .alloc_desc = {
@@ -529,6 +530,36 @@ json_deserialize (char* json_str)
 		                         .free = free,
 		                 } };
 	return _parse_json_node (&json_str, &ctx);
+}
+
+static inline json_value_t*
+json_get (const json_t* json, const char* path)
+{
+	const char* comp_end
+	        = (const char*)_seek_token (".", (char*)path, false);
+	size_t comp_len = comp_end ? comp_end - path : strlen (path);
+	bool target = !comp_end || comp_end[0] != '.';
+
+	for (json_pair_t* pair = json->pairs; pair->key; pair++)
+	{
+		if (strncmp (pair->key, path, comp_len) == 0)
+		{
+			if (target)
+			{
+				return &pair->value;
+			}
+			else if (pair->value.type == JSON_VAL_OBJ)
+			{
+				return json_get (pair->value.obj, comp_end + 1);
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	return NULL;
 }
 
 #endif
