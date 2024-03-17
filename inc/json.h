@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <wctype.h>
 
 struct json_node;
 
@@ -64,6 +65,13 @@ struct json_print_desc {
 	char* newline;
 };
 typedef struct json_print_desc json_print_desc_t;
+
+typedef struct {
+
+} json_parse_ctx_t;
+
+
+static struct json_node* _json_parse_node(char** json_str, json_parse_ctx_t* ctx);
 
 static size_t _repeat_char(int depth, char c, char** buf_out)
 {
@@ -178,18 +186,13 @@ static size_t json_serialize(struct json_node* node, char* buf, int buffer_size,
 	return size;
 }
 
-typedef struct {
-
-} json_parse_ctx_t;
-
-
-static char* _seek_token(const char* needle, const char* haystack, bool to_end)
+static char* _seek_token(const char* needle, char* haystack, bool to_end)
 {
 	const char* n_ptr = needle;
 	const char* match_start = NULL;
 	for (unsigned i = 0; haystack[i] != '\0'; i++)
 	{
-		char* c = haystack + i;
+		const char* c = haystack + i;
 
 		if (*c == *n_ptr)
 		{
@@ -209,53 +212,91 @@ static char* _seek_token(const char* needle, const char* haystack, bool to_end)
 		}
 	}
 
-	return (to_end ? n_ptr - needle : 0) + match_start;
+	return (char*)((to_end ? n_ptr - needle : 0) + match_start);
 }
 
-static char* _eat_whitespace(const char* haystack)
+static char* _eat_whitespace(char* haystack)
 {
 	while(iswspace(haystack[0])) haystack++;
 	return haystack;
 }
 
-struct json_value _json_parse_value(const char* json_str, json_parse_ctx_t* ctx)
+struct json_value _parse_json_value(char** json_str, json_parse_ctx_t* ctx)
 {
-	json_str = _eat_whitespace(json_str);
+	*json_str = _eat_whitespace(*json_str);
 
-	switch(json_str[0])
+	switch((*json_str)[0])
 	{
 	case '"': // string
+		{
+			// Find the closing double quote skipping any escaped double quotes
+			// in the string
+			(*json_str)++; // skip the opening quote
+			char* str_begin = *json_str;
+			char* str_end = *json_str;
+			while(str_end[-1] == '\\' || str_end[0] != '"')
+			{
+				str_end = _seek_token("\"", *json_str, false);
+			}
+
+			*json_str = str_end + 1;
+
+			return (struct json_value){
+				.type = JSON_VAL_STR,
+				.str = str_begin,
+			};
+		}
 		break;
-	case "{": // object
-		break
+	case '{': // object
+		return (struct json_value){
+			.type = JSON_VAL_OBJ,
+			.obj = _json_parse_node(json_str, ctx),
+		};
+		break;
+	default:
+		if (isnumber((*json_str)[0]) || (*json_str)[0] == '-' || (*json_str)[0] == '+')
+		{
+			char* num_end = NULL;
+			
+			// TODO: handle errors when parsing number
+			double d = strtod(*json_str, &num_end);
+
+			return (struct json_value) {
+				.type = JSON_VAL_FLT,
+				.num = d,
+			};
+
+			*json_str = num_end + 1;
+		}
+		break;
 	}
 
 	return (struct json_value){
-		
+
 	};
 }
 
-static struct json_pair* _json_parse_pair(const char* json_str, json_parse_ctx_t* ctx)
+static struct json_pair* _parse_json_pair(char** json_str, json_parse_ctx_t* ctx)
 {
-	char* key_start = _seek_token("\"", json_str, true);
-	char* key_end = _seek_token("\"", json_str, false);
+	char* key_start = _seek_token("\"", *json_str, true);
+	char* key_end = _seek_token("\"", *json_str, false);
 
 	if (!key_end || !key_start) { return NULL; }
 
-	json_str = key_end;
+	*json_str = key_end + 1;
 
-	char* val_start = _seek_token(":", json_str, true);
+	char* val_start = _seek_token(":", *json_str, true);
 
 }
 
 
 
-static struct json_node* _json_parse_node(const char* json_str, json_parse_ctx_t* ctx)
+static struct json_node* _json_parse_node(char** json_str, json_parse_ctx_t* ctx)
 {
 
 }
 
-static json_t json_deserialize(const char* json_str)
+static json_t json_deserialize(char* json_str)
 {
 	json_parse_ctx_t ctx = {};
 	json_t out;
