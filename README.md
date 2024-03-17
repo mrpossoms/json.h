@@ -63,9 +63,10 @@ This library offers an incomplete json implementation. It does not (yet) support
 
 ## Requirements
 
-To build and use this library, you will only require:
+To build and use this library will only require:
 * C/C++ toolchain
-However, if you would like to contribute, or run tests, these additional tools are recommended.
+  
+However, if you would like to contribute, or run tests, these additional tools are recommended:
 * Python3+
 * GNU make
 * doxygen
