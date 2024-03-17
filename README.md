@@ -63,10 +63,10 @@ This library offers an incomplete json implementation. It does not (yet) support
 
 ## Requirements
 
-To best utilize this boilerplate please ensure you have installed the following
-* Python3+
-* Pip
+To build and use this library, you will only require:
 * C/C++ toolchain
+However, if you would like to contribute, or run tests, these additional tools are recommended.
+* Python3+
 * GNU make
 * doxygen
 * clang-format
