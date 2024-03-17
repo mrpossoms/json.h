@@ -218,6 +218,19 @@ static char* _eat_whitespace(const char* haystack)
 	return haystack;
 }
 
+static char* _json_parse_string(char* json_str, char** str_end, json_parse_ctx_t* ctx)
+{
+	char* start = _seek_token("\"", json_str, true);
+	char* end = _seek_token("\"", json_str, false);
+
+	if (!start || !end) { return NULL; }
+
+	memcpy(out, start, end - start);
+	out[end - start] = '\0';
+	return out;
+}
+
+
 struct json_value _json_parse_value(const char* json_str, json_parse_ctx_t* ctx)
 {
 	json_str = _eat_whitespace(json_str);
