@@ -1,17 +1,12 @@
 include ../vars.mk
 INC+=-I../inc
-LIB+=-L../lib/$(TARGET)
-LINK+=-l$(PROJECT)
 
 TESTS=$(patsubst %.c,bin/%,$(wildcard *.c))
 
-../lib/$(TARGET)/lib$(PROJECT).a:
-	$(MAKE) -C .. static
+bin: 
+	mkdir -p $@
 
-bin: ../lib/$(TARGET)/lib$(PROJECT).a
-	mkdir -p bin
-
-bin/%: %.c bin
+bin/%: %.c ../inc/json.h bin
 	$(CC) $(CFLAGS) $(LIB) $(INC) $(LIBS) $< -o $@ $(LINK)
 
 .PHONY: test clean 

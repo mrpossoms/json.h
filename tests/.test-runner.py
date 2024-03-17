@@ -40,7 +40,7 @@ for file_path in test_names:
 
 status = COLOR_GREEN
 
-# check o see if any failed
+# check to see if any failed
 all_passed = tests_passed == len(test_names)
 if not all_passed:
     status = COLOR_RED
