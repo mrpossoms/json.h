@@ -7,39 +7,12 @@
  */
 TEST
 {
-	const char src[] = "{\"foo\":100,\"bar\":\"Hello world\",\"baz\":{\"bat\":true,\"boop\":{\"prob\":0.500000}},\"bap\":null}";
+	const char src[] = "{\"foo\":100,\"bar\":\"Hello "
+	                   "world\",\"baz\":{\"bat\":true,\"boop\":{\"prob\":0."
+	                   "500000}},\"bap\":null}";
 
-	// json_t* json = parse_json(src);
+	json_t* json = json_deserialize ((char*)src);
+	assert (json);
 
-	// json_t root = JSON(
-	// 	{"foo", JSON_INT(100)},
-	// 	{"bar", JSON_STR("Hello world")},
-	// 	{"baz", JSON_OBJ(
-	// 		{"bat", JSON_BOOL(true)},
-	// 		{"boop", JSON_OBJ(
-	// 			{"prob", JSON_FLT(0.5)},
-	// 			{} // each object must end with an empty pair
-	// 		)},
-	// 		{} // each object must end with an empty pair
-	// 	)},
-	// 	{"bap", JSON_NULL},
-	// 	{} // each object must end with an empty pair
-	// );
-
-	// json_print_desc_t print_desc = {
-	// 	.indent_char = ' ',
-	// 	.indent_size = 0,
-	// 	.key_value_spacing = 0,
-	// 	.newline = "",		
-	// };
-
-	// // count the number of bytes the string needs
-	// size_t json_str_len = json_serialize(&root, NULL, 0, &print_desc);
-
-	// // allocate and serialize
-	// char* json_str = (char*)alloca(json_str_len);
-	// json_serialize(&root, json_str, json_str_len, &print_desc);
-
-	
-	// assert(strcmp(json_str, expected) == 0);
+	json_free (json);
 }
