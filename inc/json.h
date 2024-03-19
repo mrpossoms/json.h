@@ -332,7 +332,7 @@ _eat_whitespace (char* haystack)
 	return haystack;
 }
 
-struct json_value
+static struct json_value
 _parse_json_value (char** json_str, json_parse_ctx_t* ctx)
 {
 	*json_str = _eat_whitespace (*json_str);

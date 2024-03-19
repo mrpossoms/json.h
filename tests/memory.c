@@ -8,33 +8,36 @@ typedef struct
 
 size_t allocated = 0;
 
-void* my_alloc(size_t size)
+void*
+my_alloc (size_t size)
 {
-	void* ptr = malloc(size + sizeof(ctrl_t));
+	void* ptr = malloc (size + sizeof (ctrl_t));
 	ctrl_t* ctrl = (ctrl_t*)ptr;
 	ctrl->size = size;
-	printf("malloc: %db + %db\n", allocated, size);
+	printf ("malloc: %db + %db\n", allocated, size);
 	allocated += size;
 	return (void*)(ctrl + 1);
 }
 
-void* my_realloc(void* ptr, size_t size)
+void*
+my_realloc (void* ptr, size_t size)
 {
 	ctrl_t* ctrl = &((ctrl_t*)ptr)[-1];
-	printf("realloc: %db + %db\n", allocated, size - ctrl->size);
+	printf ("realloc: %db + %db\n", allocated, size - ctrl->size);
 	allocated -= ctrl->size;
-	ctrl = realloc(ctrl, size + sizeof(ctrl_t));
+	ctrl = realloc (ctrl, size + sizeof (ctrl_t));
 	ctrl->size = size;
 	allocated += size;
 	return (void*)(ctrl + 1);
 }
 
-void my_free(void* ptr)
+void
+my_free (void* ptr)
 {
 	ctrl_t* ctrl = &((ctrl_t*)ptr)[-1];
-	printf("free: %db - %db\n", allocated, ctrl->size);
+	printf ("free: %db - %db\n", allocated, ctrl->size);
 	allocated -= ctrl->size;
-	free(ctrl);
+	free (ctrl);
 }
 
 /**
@@ -55,7 +58,7 @@ TEST
 
 	json_t* json = json_deserialize_alloc ((char*)src, alloc);
 	assert (json);
-	printf("bytes allocated: %zu\n", allocated);
+	printf ("bytes allocated: %zu\n", allocated);
 	json_free_alloc (alloc, json);
-	assert(allocated == 0);
+	assert (allocated == 0);
 }
