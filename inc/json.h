@@ -17,7 +17,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wctype.h>
 
 struct json_node;
 
@@ -100,6 +99,16 @@ typedef struct
 
 static struct json_node* _parse_json_node (char** json_str,
                                            json_parse_ctx_t* ctx);
+
+static inline bool _is_digit(char c)
+{
+	return (c == '-') | (c == '+') | ((c >= '0') & (c <= '9'));
+}
+
+static inline bool _is_whitespace(char c)
+{
+	return (c == ' ') | (c == '\t') | (c == '\n') | (c == '\r');
+}
 
 static size_t
 _repeat_char (int depth, char c, char** buf_out)
@@ -327,7 +336,7 @@ _seek_token (const char* needle, char* haystack, bool to_end)
 static char*
 _eat_whitespace (char* haystack)
 {
-	while (iswspace (haystack[0]))
+	while (_is_whitespace (haystack[0]))
 		haystack++;
 	return haystack;
 }
@@ -389,8 +398,7 @@ _parse_json_value (char** json_str, json_parse_ctx_t* ctx)
 		                   ? JSON_VAL_NULL
 		                   : JSON_VAL_INVALID;
 	default:
-		if (isdigit ((*json_str)[0]) || (*json_str)[0] == '-'
-		    || (*json_str)[0] == '+')
+		if (_is_digit((*json_str)[0]))
 		{
 			char* num_end = NULL;
 
