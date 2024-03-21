@@ -240,7 +240,7 @@ _json_print (struct json_node* node,
 static inline size_t
 json_serialize (struct json_node* node,
                 char* buf,
-                int buffer_size,
+                size_t buffer_size,
                 struct json_print_desc* desc)
 {
 	if (desc == NULL)
