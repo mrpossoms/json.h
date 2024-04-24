@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wctype.h>
+#include <ctype.h>
 
 struct json_node;
 
@@ -389,7 +390,7 @@ _parse_json_value (char** json_str, json_parse_ctx_t* ctx)
 		                   ? JSON_VAL_NULL
 		                   : JSON_VAL_INVALID;
 	default:
-		if (isdigit ((*json_str)[0]) || (*json_str)[0] == '-'
+		if (isdigit ((int)(*json_str)[0]) || (*json_str)[0] == '-'
 		    || (*json_str)[0] == '+')
 		{
 			char* num_end = NULL;
