@@ -1,7 +1,7 @@
 /**
  * @file json.h
  *
- * TODO desc
+ * @brief A simple json parser and serializer
  *
  * All Rights Reserved
  *
@@ -399,6 +399,7 @@ _parse_json_value (char** json_str, json_parse_ctx_t* ctx)
 		out.type = strncmp (*json_str, "null", 4) == 0
 		                   ? JSON_VAL_NULL
 		                   : JSON_VAL_INVALID;
+		break;
 	default:
 		if (_is_digit((*json_str)[0]))
 		{
